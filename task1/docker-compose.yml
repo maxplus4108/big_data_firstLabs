@@ -1,0 +1,17 @@
+services:
+  postgres:
+    build: .
+    container_name: postgres_logs_db
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: user_logs_db
+      SECRET_HASH: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:    
+    name: volume_postgres
