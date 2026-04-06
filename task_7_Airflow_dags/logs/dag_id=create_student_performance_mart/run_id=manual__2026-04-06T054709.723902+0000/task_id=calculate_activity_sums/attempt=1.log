@@ -1,0 +1,18 @@
+[2026-04-06T05:48:16.775+0000] {local_task_job_runner.py:123} INFO - ::group::Pre task execution logs
+[2026-04-06T05:48:16.800+0000] {taskinstance.py:2613} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: create_student_performance_mart.calculate_activity_sums manual__2026-04-06T05:47:09.723902+00:00 [queued]>
+[2026-04-06T05:48:16.814+0000] {taskinstance.py:2613} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: create_student_performance_mart.calculate_activity_sums manual__2026-04-06T05:47:09.723902+00:00 [queued]>
+[2026-04-06T05:48:16.815+0000] {taskinstance.py:2866} INFO - Starting attempt 1 of 2
+[2026-04-06T05:48:16.839+0000] {taskinstance.py:2889} INFO - Executing <Task(PythonOperator): calculate_activity_sums> on 2026-04-06 05:47:09.723902+00:00
+[2026-04-06T05:48:16.850+0000] {standard_task_runner.py:104} INFO - Running: ['***', 'tasks', 'run', 'create_student_performance_mart', 'calculate_activity_sums', 'manual__2026-04-06T05:47:09.723902+00:00', '--job-id', '28', '--raw', '--subdir', 'DAGS_FOLDER/dag_student_performance.py', '--cfg-path', '/tmp/tmpchk7z58_']
+[2026-04-06T05:48:16.853+0000] {standard_task_runner.py:105} INFO - Job 28: Subtask calculate_activity_sums
+[2026-04-06T05:48:16.854+0000] {logging_mixin.py:190} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:70 DeprecationWarning: This process (pid=629) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-04-06T05:48:16.856+0000] {standard_task_runner.py:72} INFO - Started process 630 to run task
+[2026-04-06T05:48:16.926+0000] {task_command.py:467} INFO - Running <TaskInstance: create_student_performance_mart.calculate_activity_sums manual__2026-04-06T05:47:09.723902+00:00 [running]> on host 3560f5795772
+[2026-04-06T05:48:17.060+0000] {taskinstance.py:3132} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='***' AIRFLOW_CTX_DAG_ID='create_student_performance_mart' AIRFLOW_CTX_TASK_ID='calculate_activity_sums' AIRFLOW_CTX_EXECUTION_DATE='2026-04-06T05:47:09.723902+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-04-06T05:47:09.723902+00:00'
+[2026-04-06T05:48:17.062+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-04-06T05:48:17.476+0000] {python.py:240} INFO - Done. Returned value was: None
+[2026-04-06T05:48:17.490+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-04-06T05:48:17.491+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=create_student_performance_mart, task_id=calculate_activity_sums, run_id=manual__2026-04-06T05:47:09.723902+00:00, execution_date=20260406T054709, start_date=20260406T054816, end_date=20260406T054817
+[2026-04-06T05:48:17.515+0000] {local_task_job_runner.py:266} INFO - Task exited with return code 0
+[2026-04-06T05:48:17.544+0000] {taskinstance.py:3895} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-04-06T05:48:17.548+0000] {local_task_job_runner.py:245} INFO - ::endgroup::
