@@ -86,7 +86,7 @@ def enrich_categorical_data(conn):
 
     query_edu = """
     UPDATE dmr.analytics_student_performance AS target
-    -- Безопасно переводим данные в VARCHAR перед сравнением, чтобы избежать ошибок типов
+    -- переводим данные в VARCHAR перед сравнением, чтобы избежать ошибок типов
     SET education_level = CASE 
     CAST(source.LevelEd AS VARCHAR) 
     WHEN '1' THEN 'бакалавриат' 
@@ -184,7 +184,7 @@ def calculate_advanced_metrics(conn):
     SET 
         peak_activity_week = source.num_week
     FROM RankedWeeks AS source
-    WHERE source.rn = 1  -- Берем только неделю №1 по количеству событий
+    WHERE source.rn = 1  -- Берем только неделю 1 по количеству событий
       AND target.student_id = source.userid 
       AND target.course_id = source.courseid;
     """
@@ -192,21 +192,33 @@ def calculate_advanced_metrics(conn):
     # Коэффициент стабильности 
     # Вычисляем отношение активных недель к общему количеству недель
     query_consistency = """
+
+
+    -- Обновляем данные в таблице витрины
     UPDATE dmr.analytics_student_performance AS target
     SET 
+        -- Рассчитываем коэффициент стабильности: делим число активных недель на общее число недель
         consistency_score = ROUND(
             CAST(source.act_weeks AS NUMERIC) / NULLIF(source.tot_weeks, 0), 
-            2
+            2 
         )
     FROM (
+        -- Подзапрос (source): собираем сводную статистику по активности из сырых логов
         SELECT 
             userid, 
             courseid, 
+            -- Считаем общее количество уникальных недель (сколько всего недель длится/идет курс)
             COUNT(DISTINCT num_week) AS tot_weeks, 
+            -- Считаем только те уникальные недели, на которых у студента было хотя бы одно действие (s_all > 0)
             COUNT(DISTINCT CASE WHEN s_all > 0 THEN num_week END) AS act_weeks 
         FROM public.user_logs 
+        -- Группируем все данные так, чтобы получить итоги отдельно для каждого студента на каждом курсе
         GROUP BY userid, courseid
     ) AS source
+    
+    
+    
+    -- Условие объединения: записываем рассчитанный коэффициент именно тому студенту и в тот курс, к которому он относится
     WHERE target.student_id = source.userid 
       AND target.course_id = source.courseid;
     """
@@ -242,12 +254,11 @@ def calculate_advanced_metrics(conn):
         cursor.execute(query_category)
     
     conn.commit()
-    print("Все продвинутые метрики успешно рассчитаны по шагам.")
 
 def main():
     connection = None
     try:
-        print("Подключаемся к базе данных...")
+        #Подключение к БД
         connection = connect_to_db()
         
         # Запускаем конвейер сборки витрины
@@ -257,7 +268,7 @@ def main():
         calculate_activity_sums(connection)
         calculate_advanced_metrics(connection)
         
-        print("\nУРА! Аналитическая витрина успешно собрана!")
+        print("\nАналитическая витрина собрана!")
     except Exception as e:
         print(f"\nОшибка выполнения: {e}")
         if connection:
@@ -269,3 +280,37 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
