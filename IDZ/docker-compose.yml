@@ -1,0 +1,102 @@
+version: '3.8'
+
+networks:
+  idz_default:
+
+services:
+  # Основная PostgreSQL база для учебного проекта:
+  # здесь лежат только traffic_db, public и mart
+  postgres:
+    build: .
+    container_name: bigdata_pg
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Этот volume сохраняет данные traffic_db после остановки контейнера
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - idz_default
+
+  # Airflow запускает DAG:
+  # 1) generate_data.py
+  # 2) load_raw.py
+  # 3) main.py и fine_stats_mart.py
+  airflow:
+    image: apache/airflow:2.8.1-python3.10
+    container_name: bigdata_airflow
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      - _PIP_ADDITIONAL_REQUIREMENTS=psycopg2-binary python-dotenv pandas sqlalchemy faker
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./.env:/opt/airflow/scripts/.env
+      - ./data:/opt/airflow/data
+    networks:
+      - idz_default
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+      airflow webserver --port 8080 &
+      airflow scheduler
+      "
+
+  # Отдельная PostgreSQL база только для служебных данных Metabase:
+  # регистрация, настройки, вопросы, дашборды, подключения.
+  # ВАЖНО: это не traffic_db.
+  metabase-postgres:
+    image: postgres:15
+    container_name: bigdata_metabase_pg
+    restart: always
+    environment:
+      - POSTGRES_USER=metabase
+      - POSTGRES_PASSWORD=metabase
+      - POSTGRES_DB=metabase_db
+    volumes:
+      # Этот volume сохраняет регистрацию и настройки Metabase
+      - metabase_pg_data:/var/lib/postgresql/data
+    networks:
+      - idz_default
+
+  # Metabase как BI-инструмент
+  metabase:
+    image: metabase/metabase:latest
+    container_name: bigdata_metabase
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Это база НЕ для аналитики, а для внутренней памяти Metabase
+      - MB_DB_TYPE=postgres
+      - MB_DB_DBNAME=metabase_db
+      - MB_DB_PORT=5432
+      - MB_DB_USER=metabase
+      - MB_DB_PASS=metabase
+      - MB_DB_HOST=metabase-postgres
+    depends_on:
+      - metabase-postgres
+      - postgres
+    networks:
+      - idz_default
+
+volumes:
+  # Данные проекта traffic_db
+  pg_data:
+
+  # Служебные данные Metabase
+  metabase_pg_data:
